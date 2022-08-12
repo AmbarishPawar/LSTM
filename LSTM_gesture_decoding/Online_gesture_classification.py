@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 from scipy.io import loadmat
 from tensorflow import keras
 
-model = keras.models.load_model('LSTM_model_sm')
+model = keras.models.load_model('LSTM_trained_model')
 #%% Load data from block
 data         = loadmat('online_data.mat')
 
