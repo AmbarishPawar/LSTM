@@ -69,7 +69,7 @@ for counter_packets in range(0,fr_nsp.shape[1]):
     fr_mn = np.nanmean(fr_buffer,0) #mean and std taken to calculate z-score
     fr_sd = np.nanstd(fr_buffer,0,ddof=1)
     
-    # if buffer has only 1 column, std of one column will be zero, and z-score
+    # If buffer has only 1 column, std of one column will be zero, and z-score
     # calculation will yield NaNs. This loop gets over that condition.
     if counter_packets>0:
         z_score = ((fr_sqrt-fr_mn)/fr_sd)
@@ -95,7 +95,7 @@ for counter_packets in range(0,fr_nsp.shape[1]):
     # Predict the gesture based on 'decode_win' amount of z-scored data
     Y = model.predict(zscore_part)
     YPred[counter_packets,:] = Y
-    YClass[counter_packets] = Y.argmax(axis=-1)# convert probabilities to 
+    YClass[counter_packets] = Y.argmax(axis=-1)#convert probabilities to 
     # integer states
     
     # This loop does a form of smoothing. The predicted gesture within a 
@@ -110,7 +110,7 @@ for counter_packets in range(0,fr_nsp.shape[1]):
         if max_class>=(threshold*decode_win):
             pred_smooth[counter_packets] = max_class_idx
         else:
-            pred_smooth[counter_packets] = 0 # default to rest gesture
+            pred_smooth[counter_packets] = 0 #default to rest gesture
     continue
 
 # We want to find when the block actually starts. Get the times here. 
@@ -150,6 +150,7 @@ for c in range(len(cue_on_nev)):
 # Simple reshaping to match dimensions for plotting
 t = t[1:]
 real_gest = np.reshape(np.transpose(gest_marks[:,1:]),t.shape)
+
 #%% Plotting
 which_elect = 23 #Get activity of electrode #23. Could do any electode here
 elec_to_plot = whole_buffer[:,which_elect]
@@ -171,5 +172,3 @@ plt.plot(t,elec_to_plot),plt.xlim([block_start,block_end])
 # Predicted gestures. 
 plt.subplot(3,1,3)
 plt.plot(t,pred_smooth),plt.xlim([block_start,block_end])
-
-#plt.show

@@ -1,3 +1,23 @@
+"""
+author @ambarish
+
+This is a simmple script that trains a LSTM network on trial-aligned neural spiking data. 
+
+In the experiment, the patient is cued to perform the following gestures of the left hand
+0 - Rest. Hand is kept in a resting position, the default position
+1 - Open. Open/splay the fingers as wide as possible
+2 - Pinch. Thumb and forefinger pinch gesture
+
+Each dataset contains 9 blocks of data, each containing 14 gestures randomly
+interspersed, for a total of 126 repetitions. The data has been preprocessed 
+to be square-rooted, z-scored, and smoothed. In the scipt, data is further 
+sorted by electrodes and repetitions and aligned according to cue onset and offset
+of gestures. Thus, we only feed ths gesture part of the timestamps into the LSTM. 
+Most of the processing is done in the 'Format_data_for_LSTM' function.
+
+There are total of 6 datasets. We train on one dataset, and evaluate the performance
+of the LSTM on the other 5 unseen datasets. 
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 from keras.models import Sequential
@@ -8,7 +28,7 @@ from scipy.io import loadmat
 # Load preprocessed training data
 train_data = loadmat('Gestures_for_LSTM_train.mat');
 
-# Align data according to trial start and stop times
+# Align data according to trial start and stop times and electrodes
 [FR_train,labels_train] = Format_data_for_LSTM(train_data)
 
 # Colormap plots to check that processing is correct (uncomment below)
