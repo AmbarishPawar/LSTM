@@ -2,18 +2,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 from keras.models import Sequential
 from keras.layers import Dense,LSTM,Dropout
-from keras_self_attention import SeqSelfAttention
 from LSTM_functions import Format_data_for_LSTM,show_features_1D, get_layer_outputs,show_features_2D
-from sklearn.model_selection import train_test_split
 from scipy.io import loadmat
 
+# Load preprocessed training data
 train_data = loadmat('Gestures_for_LSTM_train.mat');
+
+# Align data according to trial start and stop times
 [FR_train,labels_train] = Format_data_for_LSTM(train_data)
 
-F = FR_train[0]
-#plt.pcolormesh(np.transpose(F),cmap='jet',vmin=0.3,vmax=1.3)
-#plt.show()
+# Colormap plots to check that processing is correct (uncomment below)
+# F = FR_train[0]
+# plt.pcolormesh(np.transpose(F),cmap='jet',vmin=0.3,vmax=1.3)
+# plt.show()
 
+# Create a two layer LSTM model, with variable time input
 model = Sequential()
 model.add(LSTM(128, return_sequences=True,input_shape=(None,FR_train.shape[2]),
                activation = 'tanh',name='lstm1'))
@@ -27,10 +30,11 @@ model.fit(FR_train,labels_train, epochs=10, batch_size=16)
 
 print(model.summary())
 
-#%% Evaluate the model on an unseen dataset from another day
+#%% 
+# Evaluate the model on an unseen dataset from another day
+# There are 5 datasets the model can be evaluated on
 test_data  = loadmat('Gestures_for_LSTM_test_0604.mat')
 [FR_test,labels_test]   = Format_data_for_LSTM(test_data)
 score = model.evaluate(FR_test,labels_test,verbose=0,batch_size=16)
-#k = model.predict(FR_test)
 print('Test loss:',score[0])
 print('Test accuracy:',score[1])
