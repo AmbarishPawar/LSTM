@@ -55,7 +55,7 @@ def Format_data_for_LSTM(train_data):
     
     return FR_train, labels_train #return 3-D firing rates and labels
 
-def Process_and_classify_per_block(model,data):
+def Process_and_classify_per_block(model,data,decode_win,threshold):
     
     #%% Process data as if it is streaming from the brain
     fr           = data['fr']           #Firing rate
@@ -64,10 +64,6 @@ def Process_and_classify_per_block(model,data):
     cue_on_nev   = data['cue_on_nev']   #Timestamp of when gesture started
     cue_off_nev  = data['cue_off_nev']  #Timestamp of when gesture ended
     gestureLabels= data['gestureLabels']
-    
-    decode_win  = 30 #how many samples to decode at one instance. The larger this
-    #number, better the decoding, but this can slow down the decoder. This number
-    #is a trade-off between speed and accuracy
     
     # Initialize buffers and other variables
     z_buffer    = np.zeros((2000,128))
@@ -83,7 +79,6 @@ def Process_and_classify_per_block(model,data):
     YClass       = np.zeros((fr_nsp.shape[1],))
     pred_smooth  = np.zeros((fr_nsp.shape[1],)) 
     bins         = [0,1,2,3]
-    threshold    = 0.8
     
     for counter_packets in range(0,fr_nsp.shape[1]):
         print(counter_packets)

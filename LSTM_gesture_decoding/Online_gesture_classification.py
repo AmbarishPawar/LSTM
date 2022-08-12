@@ -33,8 +33,12 @@ model = keras.models.load_model('LSTM_trained_model')
 data         = loadmat('online_data.mat')
 
 #%%
-[YMov,gestureLabels,real_timebin,gest_marks,
- whole_buffer,pred_smooth,block_start,block_end,t] = Process_and_classify_per_block(model,data)
+decode_win  = 30 #how many samples to decode at one instance. The larger this
+#number, better the decoding, but this can slow down the decoder. This number
+#is a trade-off between speed and accuracy
+threshold   = 0.8
+[YMov,gestureLabels,real_timebin,gest_marks,whole_buffer,pred_smooth,block_start,
+ block_end,t] = Process_and_classify_per_block(model,data,decode_win,threshold)
 
 #%% Reshaping to match dimensions for plotting later
 real_gest = np.reshape(np.transpose(gest_marks[:,1:]),t.shape)
