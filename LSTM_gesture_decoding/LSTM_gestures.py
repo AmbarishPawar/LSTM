@@ -1,7 +1,15 @@
 """
 author @ambarish
 
-This is a simmple script that trains a LSTM network on trial-aligned neural spiking data. 
+This is a simmple script that trains a Long Short-Term Memory (LSTM) network on 
+trial-aligned neural data. 
+
+Neural data is a series of discrete events indicated by the timestamps on when 
+'spikes' occurred. Whenever a spike occurs, the timestamp when that spike occurred
+is stored. This discrete event is further processed into 'spike-rate', by chosing
+a time window, within which the number of spikes that occurred is converted into 
+a rate. This spike rate is used to train the LSTM. Here, we have spike rates from
+128 channels, or electrodes that are implanted in the motor and sensory cortices.
 
 In the experiment, the patient is cued to perform the following gestures of the left hand
 0 - Rest. Hand is kept in a resting position, the default position
