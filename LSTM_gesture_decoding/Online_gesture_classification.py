@@ -29,10 +29,12 @@ from tensorflow import keras
 from LSTM_functions_online import Process_and_classify_per_block
 
 model = keras.models.load_model('LSTM_trained_model')
-#%% Load data from block
-data         = loadmat('online_data.mat')
 
-#%%
+#%% Load data from block
+data  = loadmat('online_data.mat')
+
+#%% Define parameters, start streaming neural data and decoding
+
 decode_win  = 30 #how many samples to decode at one instance. The larger this
 #number, better the decoding, but this can slow down the decoder. This number
 #is a trade-off between speed and accuracy
@@ -45,7 +47,7 @@ threshold   = 0.8 #If the predictions within 'decode_win' exceed 80% threshold
 [ypred,ytest,real_timebin,gest_marks,whole_buffer,pred_smooth,block_start,
  block_end,t] = Process_and_classify_per_block(model,data,decode_win,threshold)
 
-#%% Reshaping to match dimensions for plotting later
+# Reshaping to match dimensions for plotting later
 real_gest = np.reshape(np.transpose(gest_marks[:,1:]),t.shape)
 
 #%% Plotting
@@ -54,15 +56,28 @@ elec_to_plot = whole_buffer[:,which_elect]
 # Spiking data is noisy. Smooth here with a 50 sample window for illustration
 elec_to_plot = np.convolve(elec_to_plot,np.ones(50)/50,'same')
 
+# Set some plotting rules
+fig,ax = plt.subplots(nrows=3,ncols=1); 
+fig.tight_layout() #leaves gap between subplots
+fig.dpi = 300 #better resolution figure
+
 # Ground-truth/cued gestures, what the patient was instructed and when
-plt.subplot(3,1,1)
+ax1 = plt.subplot(3,1,1)
 plt.plot(t,np.float64(real_gest),'r-'),plt.xlim([block_start,block_end])
+ax1.axes.xaxis.set_ticklabels([])
+plt.ylabel('Gesture')
+ax1.set_title('Cued gestures (ground-truth)')
 
 # Z-scored firing rate from 'which_elect' above
-plt.subplot(3,1,2)
+ax2 = plt.subplot(3,1,2)
 plt.plot(t,elec_to_plot),plt.xlim([block_start,block_end])
+ax2.axes.xaxis.set_ticklabels([])
+plt.ylabel('z-score')
+ax2.set_title('Firing-rate for one channel')
 
 # Predicted gestures. 
-plt.subplot(3,1,3)
+ax3 = plt.subplot(3,1,3)
 plt.plot(t,pred_smooth),plt.xlim([block_start,block_end])
 plt.xlabel('time(s)')
+plt.ylabel('Gesture')
+ax3.set_title('Gestures predicted by LSTM')
