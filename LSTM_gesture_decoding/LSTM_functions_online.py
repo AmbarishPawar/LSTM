@@ -160,14 +160,17 @@ def Process_and_classify_per_block(model,data,decode_win,threshold):
     # the LSTM decoder. These need to be taken into account before calculating 
     # accuracy.
     YMov = np.zeros(len(cue_on_nev))
+    used_spikes = [];
     for c in range(len(cue_on_nev)):
         this_cue_on = cue_on_nev[c]
         this_cue_off = this_cue_on+decode_end
+        #needs to be converted to np array and reshaped to index into it
         cue_idx = np.where(np.logical_and(t>=(this_cue_on+total_delay),t<=this_cue_off))
         this_pred = pred_smooth[cue_idx]
         classified_as_what,temp1 = np.histogram(this_pred,[0,1,2,3])
         max_count_idx = np.argmax(classified_as_what)
         YMov[c] = max_count_idx
+        used_spikes = [used_spikes,whole_buffer[:,cue_idx[0]:cue_idx[-1]]]
     
     # Simple reshaping to match dimensions for plotting
     t = t[1:]    
@@ -176,4 +179,4 @@ def Process_and_classify_per_block(model,data,decode_win,threshold):
     block_start = t[block_start_idx]
     block_end   = t[block_end_idx]
     
-    return YMov,gestureLabels,real_timebin,gest_marks,whole_buffer,pred_smooth,block_start,block_end,t
+    return YMov,gestureLabels,used_spikes,real_timebin,gest_marks,whole_buffer,pred_smooth,block_start,block_end,t
