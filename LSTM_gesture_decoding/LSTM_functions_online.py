@@ -41,8 +41,7 @@ def Format_data_for_LSTM(train_data):
             if check_nan.any():
                 fr_this_rep[j,:]= np.nanmean(fr_this_rep,0)
                 
-            # Smooth data by 'kernel' size. This is another hyperparameter and makes
-            # a big difference. 
+            # Smooth data by 'kernel' size. This is another hyperparameter and makes a big difference. 
             fr_this_rep_sm[j,:] = np.convolve(fr_this_rep[j,:],kernel,'same')
              
         # Align the gesture labels             
@@ -112,20 +111,17 @@ def Process_and_classify_per_block(model,data,decode_win,threshold):
             # Do not divide by std, otherwise we'll get only NaNs
              z_buffer[-1,:] = (fr_sqrt-fr_mn)/2
         
-        # whole_buffer stored all z-scored data, so that we can examine it later 
-        # if we wanted to. 
+        # whole_buffer stored all z-scored data, so that we can examine it later if we wanted to. 
         whole_buffer = np.roll(whole_buffer,-1,0) #shift rows for new data
         whole_buffer[-1,:] = z_buffer[-1,:] #add new data
         
-        # zscore_part only takes 'decode_win' number of samples that will be fed to
-        # the decoder. 
+        # zscore_part only takes 'decode_win' number of samples that will be fed to the decoder. 
         zscore_part[0,:,:] = z_buffer[-decode_win:,:]
         t_part = time_buffer[-decode_win:,:]
         # Predict the gesture based on 'decode_win' amount of z-scored data
         Y = model.predict(zscore_part)
         YPred[counter_packets,:] = Y #store probabilities
-        YClass[counter_packets] = Y.argmax(axis=-1)#convert probabilities to 
-        # integer states
+        YClass[counter_packets] = Y.argmax(axis=-1)#convert probabilities to integer states
         
         # This loop does a form of smoothing. The predicted gesture within a 
         # 'decode_win' is the one that exceeds a 'threshold' amount. For example:
@@ -165,8 +161,7 @@ def Process_and_classify_per_block(model,data,decode_win,threshold):
     # was cued to start and stop gesture. Ideally the 'ground-truth' of the time
     # duration of cued gestures and should closely align with predicted gestures. 
     # However, there are delays in when the participant makes gestures, delays in 
-    # the LSTM decoder. These need to be taken into account before calculating 
-    # accuracy.
+    # the LSTM decoder. These need to be taken into account before calculating accuracy.
     YMov = np.zeros(len(cue_on_nev))
     for c in range(len(cue_on_nev)):
         this_cue_on = cue_on_nev[c]
