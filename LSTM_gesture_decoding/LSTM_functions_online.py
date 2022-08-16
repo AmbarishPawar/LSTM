@@ -82,29 +82,31 @@ def Process_and_classify_per_block(model,data,decode_win,threshold):
     fr_sqrt      = np.zeros((fr_nsp.shape[0],))
     YPred        = np.zeros((fr_nsp.shape[1],3))
     YClass       = np.zeros((fr_nsp.shape[1],))
-    pred_smooth  = np.zeros((fr_nsp.shape[1],)) 
+    pred_gesture = np.zeros((fr_nsp.shape[1],)) 
     bins         = [0,1,2,3]
     
     for counter_packets in range(0,fr_nsp.shape[1]):
-        print(counter_packets)
+        #print(counter_packets) #Only to check progress of code. 
         fr_sqrt     = np.sqrt(fr_nsp[:,counter_packets]) #square-root of firing rate
         fr_buffer   = np.roll(fr_buffer,-1,0) #shift rows, to accomodate new data
         time_buffer = np.roll(time_buffer,-1,1)
         
         fr_buffer[-1,:] = fr_sqrt
         time_buffer[-1] = real_timebin[0,counter_packets]
-        fr_mn = np.nanmean(fr_buffer,0) #mean and std taken to calculate z-score
+        
+        # Mean and std taken to calculate z-score
+        fr_mn = np.nanmean(fr_buffer,0) 
         fr_sd = np.nanstd(fr_buffer,0,ddof=1)
         
         # If buffer has only 1 column, std of one column will be zero, and z-score
         # calculation will yield NaNs. This loop gets over that condition.
         if counter_packets>0:
             z_score = ((fr_sqrt-fr_mn)/fr_sd)
-            z_score[np.isnan(z_score)] = 0
-            z_score[np.isinf(z_score)] = 0
+            z_score[np.isnan(z_score)] = 0 #remove NaNs
+            z_score[np.isinf(z_score)] = 0 #remove inf
             
-            z_buffer = np.roll(z_buffer,-1,0)
-            z_buffer[-1,:] = z_score
+            z_buffer = np.roll(z_buffer,-1,0) #shift rows up to accomodate new incoming data
+            z_buffer[-1,:] = z_score #add new data
             
         else:
             # Do not divide by std, otherwise we'll get only NaNs
@@ -112,8 +114,8 @@ def Process_and_classify_per_block(model,data,decode_win,threshold):
         
         # whole_buffer stored all z-scored data, so that we can examine it later 
         # if we wanted to. 
-        whole_buffer = np.roll(whole_buffer,-1,0)
-        whole_buffer[-1,:] = z_buffer[-1,:]
+        whole_buffer = np.roll(whole_buffer,-1,0) #shift rows for new data
+        whole_buffer[-1,:] = z_buffer[-1,:] #add new data
         
         # zscore_part only takes 'decode_win' number of samples that will be fed to
         # the decoder. 
@@ -135,9 +137,10 @@ def Process_and_classify_per_block(model,data,decode_win,threshold):
             max_class = np.max(classify_in_window)
             max_class_idx = np.argmax(classify_in_window)
             if max_class>=(threshold*decode_win):
-                pred_smooth[counter_packets] = max_class_idx
+                #if more than threshold, this is predicted gesture
+                pred_gesture[counter_packets] = max_class_idx
             else:
-                pred_smooth[counter_packets] = 0 #default to rest gesture
+                pred_gesture[counter_packets] = 0 #default to rest gesture
         continue
     
     # We want to find when the block actually starts. Get the times here. 
@@ -170,7 +173,7 @@ def Process_and_classify_per_block(model,data,decode_win,threshold):
         this_cue_off = this_cue_on+decode_end
         #(For later) needs to be converted to np array and reshaped to index into it
         cue_idx = np.where(np.logical_and(t>=(this_cue_on+total_delay),t<=this_cue_off))
-        this_pred = pred_smooth[cue_idx]
+        this_pred = pred_gesture[cue_idx]
         classified_as_what,temp1 = np.histogram(this_pred,[0,1,2,3])
         max_count_idx = np.argmax(classified_as_what)
         YMov[c] = max_count_idx
@@ -182,4 +185,4 @@ def Process_and_classify_per_block(model,data,decode_win,threshold):
     block_start = t[block_start_idx]
     block_end   = t[block_end_idx]
     
-    return YMov,gestureLabels,real_timebin,gest_marks,whole_buffer,pred_smooth,block_start,block_end,t
+    return YMov,gestureLabels,real_timebin,gest_marks,whole_buffer,pred_gesture,block_start,block_end,t

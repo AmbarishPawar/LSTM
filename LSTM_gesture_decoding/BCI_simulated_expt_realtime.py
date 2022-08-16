@@ -13,7 +13,7 @@ Here are the steps
 - Load a pretrained LSTM model that was trained by the LSTM_gestures script.
 - Load one block of neural spiking data (different from what was used to train decoder).
 - Each block contains 14 gestures of hand in random order: rest, open, pinch
-- 0 - Rest, 1 - Open, 2 - Pinch. This is the convention used.
+- Y-data: 0-Rest, 1-Open, 2-Pinch. This is the convention for gestures.
 - Data is (pseudo)streamed in once per time-step. This is done by gradually 
   filling up buffers. This is done to simulate a real BCI experiment.
 - As the buffers start filling up, whatever data has streamed in is fed into 
@@ -44,20 +44,20 @@ threshold   = 0.8 #If the predictions within 'decode_win' exceed 80% threshold
 
 # This function does the heavy lifting of actually decoding gestures in real-time
 # Detailed comments are present within the function
-[ypred,ytest,real_timebin,gest_marks,whole_buffer,pred_smooth,block_start,
+[ypred,ytest,real_timebin,gest_marks,whole_buffer,pred_gesture,block_start,
  block_end,t] = Process_and_classify_per_block(model,data,decode_win,threshold)
 
 # Reshaping to match dimensions for plotting later
 real_gest = np.reshape(np.transpose(gest_marks[:,1:]),t.shape)
 
 #%% Plotting
-which_elect = 23 #Get activity of electrode #23. Could do any electode here
+which_elect  = 23 #Get activity of electrode #23. Could do any electode here
 elec_to_plot = whole_buffer[:,which_elect]
 # Spiking data is noisy. Smooth here with a 50 sample window for illustration
 elec_to_plot = np.convolve(elec_to_plot,np.ones(50)/50,'same')
 
 # Set some plotting rules
-fig,ax = plt.subplots(nrows=3,ncols=1); 
+fig,ax  = plt.subplots(nrows=3,ncols=1); 
 fig.tight_layout() #leaves gap between subplots
 fig.dpi = 300 #better resolution figure
 
@@ -77,7 +77,7 @@ ax2.set_title('Firing-rate for one channel')
 
 # Predicted gestures. 
 ax3 = plt.subplot(3,1,3)
-plt.plot(t,pred_smooth),plt.xlim([block_start,block_end])
+plt.plot(t,pred_gesture),plt.xlim([block_start,block_end])
 plt.xlabel('time(s)')
 plt.ylabel('Gesture')
 ax3.set_title('Gestures predicted by LSTM')
