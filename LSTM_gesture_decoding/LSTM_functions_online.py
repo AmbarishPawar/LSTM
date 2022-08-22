@@ -100,6 +100,7 @@ def Process_and_classify_per_block(model,data,decode_win,threshold):
         # If buffer has only 1 column, std of one column will be zero, and z-score
         # calculation will yield NaNs. This loop gets over that condition.
         if counter_packets>0:
+            # Done to standardize features 
             z_score = ((fr_sqrt-fr_mn)/fr_sd)
             z_score[np.isnan(z_score)] = 0 #remove NaNs
             z_score[np.isinf(z_score)] = 0 #remove inf
