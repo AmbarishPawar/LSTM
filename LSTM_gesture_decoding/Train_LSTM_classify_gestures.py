@@ -48,10 +48,10 @@ train_data = loadmat('Gestures_for_LSTM_train.mat');
 model = Sequential()
 model.add(LSTM(128, return_sequences=True,input_shape=(None,FR_train.shape[2]),
                activation = 'tanh',name='lstm1'))
-model.add(Dropout(0.4))
+model.add(Dropout(0.2))
 model.add(LSTM(128, return_sequences=False,activation = 'tanh',
                name='lstm2'))
-model.add(Dropout(0.4))
+model.add(Dropout(0.2))
 model.add(Dense(3, activation='softmax',name='dense1'))
 model.compile(optimizer='adam',loss='SparseCategoricalCrossentropy',metrics=['accuracy'])
 model.fit(FR_train,labels_train, epochs=10, batch_size=16)
